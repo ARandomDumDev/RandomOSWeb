@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Random OS Web - iOS 18</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RandomOS</title>
   <style>
     /* Global Styles */
     html, body {
@@ -14,17 +14,19 @@
       background: linear-gradient(135deg, #f8f9fa, #e9ecef);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
+
     /* Home Screen */
     #homeScreen {
       display: flex;
       flex-wrap: wrap;
       width: 100%;
-      height: calc(100% - 70px); /* Reserve space for the dock */
+      height: calc(100% - 70px);
       align-content: flex-start;
       justify-content: center;
       padding: 20px;
       box-sizing: border-box;
     }
+
     .app-icon {
       width: 80px;
       height: 100px;
@@ -42,17 +44,7 @@
     .app-icon:hover {
       transform: scale(1.1);
     }
-    .app-icon img {
-      width: 50px;
-      height: 50px;
-      border-radius: 12px;
-    }
-    .app-icon span {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #333;
-      text-align: center;
-    }
+
     /* Dock */
     #dock {
       position: fixed;
@@ -67,54 +59,8 @@
       justify-content: center;
       box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
     }
-    #assistantBtn {
-      background: #007aff;
-      color: #fff;
-      border: none;
-      border-radius: 30px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #assistantBtn:hover {
-      background: #005bb5;
-    }
-    /* Control Center Panel */
-    #controlCenter {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      width: 220px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 15px;
-      z-index: 1000;
-      transform: translateY(-150%);
-      transition: transform 0.3s ease;
-    }
-    #controlCenter.active {
-      transform: translateY(0);
-    }
-    .control-btn {
-      background: #007aff;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 8px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    #closeControlCenter {
-      background: none;
-      border: none;
-      color: #007aff;
-      font-size: 16px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-    /* Circular Trigger for Control Center */
+
+    /* Circular Control Center Button */
     #controlTrigger {
       position: fixed;
       top: 10px;
@@ -124,53 +70,59 @@
       background: rgba(255,255,255,0.3);
       border-radius: 50%;
       backdrop-filter: blur(10px);
-      z-index: 1001;
-    }
-    /* App Containers for Simulated Apps */
-    .app-container {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #fff;
-      flex-direction: column;
-    }
-    .app-header {
-      height: 50px;
-      background: rgba(240,240,240,0.9);
+      cursor: pointer;
       display: flex;
       align-items: center;
-      padding: 0 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      justify-content: center;
     }
-    .back-btn {
+
+    /* Control Center */
+    #controlCenter {
+      position: fixed;
+      top: -100%;
+      right: 0;
+      width: 250px;
+      height: 300px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      z-index: 1000;
+      transition: top 0.3s ease;
+    }
+    #controlCenter.active {
+      top: 10px;
+    }
+
+    .control-btn {
+      display: block;
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 10px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Close Button */
+    #closeControlCenter {
       background: none;
       border: none;
       color: #007aff;
       font-size: 16px;
+      margin-bottom: 10px;
       cursor: pointer;
-    }
-    .app-title {
-      flex: 1;
-      text-align: center;
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-    }
-    .app-content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
     }
   </style>
 </head>
 <body>
-  <!-- Circular Trigger for Control Center (Swipe down on this circle to open the control center) -->
-  <div id="controlTrigger"></div>
 
-  <!-- Control Center Panel -->
+  <!-- Control Center Trigger (Swipe or Tap) -->
+  <div id="controlTrigger">☰</div>
+
+  <!-- Control Center -->
   <div id="controlCenter">
     <button id="closeControlCenter" onclick="closeControlCenter()">Close</button>
     <strong>Control Center</strong>
@@ -179,149 +131,54 @@
     <button class="control-btn" onclick="alert('Brightness adjusted!')">Brightness</button>
   </div>
 
-  <!-- Home Screen with App Icons -->
+  <!-- Home Screen -->
   <div id="homeScreen">
-    <div class="app-icon" onclick="launchApp('mail')">
-      <img src="https://via.placeholder.com/50" alt="Mail Icon" />
+    <div class="app-icon" onclick="alert('Random Mail opened!')">
       <span>Random Mail</span>
     </div>
-    <div class="app-icon" onclick="launchApp('safari')">
-      <img src="https://via.placeholder.com/50" alt="Safari Icon" />
+    <div class="app-icon" onclick="alert('Random Safari opened!')">
       <span>Random Safari</span>
     </div>
-    <div class="app-icon" onclick="launchApp('calendar')">
-      <img src="https://via.placeholder.com/50" alt="Calendar Icon" />
+    <div class="app-icon" onclick="alert('Random Calendar opened!')">
       <span>Random Calendar</span>
     </div>
-    <div class="app-icon" onclick="launchApp('photos')">
-      <img src="https://via.placeholder.com/50" alt="Photos Icon" />
+    <div class="app-icon" onclick="alert('Random Photos opened!')">
       <span>Random Photos</span>
     </div>
   </div>
 
-  <!-- Dock with Random The Assistant -->
+  <!-- Dock -->
   <div id="dock">
-    <button id="assistantBtn" onclick="startAssistant()">Hey, Random</button>
-  </div>
-
-  <!-- App Containers for Simulated Apps -->
-  <div id="appMail" class="app-container">
-    <div class="app-header">
-      <button class="back-btn" onclick="backToHome()">← Back</button>
-      <div class="app-title">Random Mail</div>
-    </div>
-    <div class="app-content">
-      <p>Welcome to Random Mail!</p>
-      <p>This is a simulated mail app. Here you could check your random emails.</p>
-    </div>
-  </div>
-
-  <div id="appSafari" class="app-container">
-    <div class="app-header">
-      <button class="back-btn" onclick="backToHome()">← Back</button>
-      <div class="app-title">Random Safari</div>
-    </div>
-    <div class="app-content">
-      <p>Welcome to Random Safari!</p>
-      <p>Imagine browsing the web in a cool, random way. (Simulated browser view)</p>
-    </div>
-  </div>
-
-  <div id="appCalendar" class="app-container">
-    <div class="app-header">
-      <button class="back-btn" onclick="backToHome()">← Back</button>
-      <div class="app-title">Random Calendar</div>
-    </div>
-    <div class="app-content">
-      <p>Welcome to Random Calendar!</p>
-      <p>This is a simulated calendar app showing random events.</p>
-    </div>
-  </div>
-
-  <div id="appPhotos" class="app-container">
-    <div class="app-header">
-      <button class="back-btn" onclick="backToHome()">← Back</button>
-      <div class="app-title">Random Photos</div>
-    </div>
-    <div class="app-content">
-      <p>Welcome to Random Photos!</p>
-      <p>This is a simulated photo gallery with random images.</p>
-      <img src="https://via.placeholder.com/300x200" alt="Random Photo" style="width:100%; border-radius: 10px;" />
-    </div>
+    <button onclick="alert('Hey, Random!')">Hey, Random</button>
   </div>
 
   <script>
-    // Prevent scrolling via mouse wheel and touch events
-    window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-    window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-
-    // Functions for app navigation
-    function launchApp(app) {
-      document.getElementById('homeScreen').style.display = 'none';
-      let apps = document.getElementsByClassName('app-container');
-      for (let i = 0; i < apps.length; i++) {
-        apps[i].style.display = 'none';
-      }
-      document.getElementById('app' + capitalize(app)).style.display = 'flex';
-    }
-    function backToHome() {
-      let apps = document.getElementsByClassName('app-container');
-      for (let i = 0; i < apps.length; i++) {
-        apps[i].style.display = 'none';
-      }
-      document.getElementById('homeScreen').style.display = 'flex';
-    }
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
+    // Control Center Functions
+    function openControlCenter() {
+      document.getElementById('controlCenter').classList.add('active');
     }
 
-    // Voice Assistant using the Web Speech API
-    function startAssistant() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Sorry, your browser doesn’t support speech recognition.');
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-      recognition.start();
-      recognition.onresult = function(event) {
-        const command = event.results[0][0].transcript;
-        alert('Random The Assistant heard: "' + command + '"');
-      };
-      recognition.onerror = function(event) {
-        alert('Oops, an error occurred: ' + event.error);
-      };
+    function closeControlCenter() {
+      document.getElementById('controlCenter').classList.remove('active');
     }
 
-    // --- Control Center Swipe Gesture ---
-    const controlTrigger = document.getElementById('controlTrigger');
-    const controlCenter = document.getElementById('controlCenter');
+    // Swipe Gesture Detection
     let startY = null;
-
-    controlTrigger.addEventListener('touchstart', function(e) {
+    document.getElementById('controlTrigger').addEventListener('touchstart', function(e) {
       startY = e.touches[0].clientY;
     });
-    controlTrigger.addEventListener('touchmove', function(e) {
+
+    document.getElementById('controlTrigger').addEventListener('touchmove', function(e) {
       if (!startY) return;
       let diffY = e.touches[0].clientY - startY;
-      if (diffY > 50) {  // Swipe down threshold
+      if (diffY > 50) {
         openControlCenter();
         startY = null;
       }
     });
-    controlTrigger.addEventListener('touchend', function(e) {
-      startY = null;
-    });
 
-    function openControlCenter() {
-      controlCenter.classList.add('active');
-    }
-    function closeControlCenter() {
-      controlCenter.classList.remove('active');
-    }
+    document.getElementById('controlTrigger').addEventListener('click', openControlCenter);
   </script>
+
 </body>
 </html>

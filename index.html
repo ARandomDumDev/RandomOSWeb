@@ -19,7 +19,7 @@
       display: flex;
       flex-wrap: wrap;
       width: 100%;
-      height: calc(100% - 70px); /* Leaving space for the dock */
+      height: calc(100% - 70px); /* Reserve space for the dock */
       align-content: flex-start;
       justify-content: center;
       padding: 20px;
@@ -80,35 +80,22 @@
     #assistantBtn:hover {
       background: #005bb5;
     }
-    /* Control Center Button */
-    #controlToggle {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: #007aff;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
     /* Control Center Panel */
     #controlCenter {
       position: fixed;
-      top: 20px;
-      right: 20px;
+      top: 10px;
+      right: 10px;
       width: 220px;
       background: rgba(255,255,255,0.95);
       border-radius: 15px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       padding: 15px;
-      display: none;
-      flex-direction: column;
       z-index: 1000;
+      transform: translateY(-150%);
+      transition: transform 0.3s ease;
     }
     #controlCenter.active {
-      display: flex;
+      transform: translateY(0);
     }
     .control-btn {
       background: #007aff;
@@ -119,7 +106,27 @@
       margin-top: 10px;
       cursor: pointer;
     }
-    /* App Containers */
+    #closeControlCenter {
+      background: none;
+      border: none;
+      color: #007aff;
+      font-size: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    /* Circular Trigger for Control Center */
+    #controlTrigger {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      backdrop-filter: blur(10px);
+      z-index: 1001;
+    }
+    /* App Containers for Simulated Apps */
     .app-container {
       display: none;
       position: absolute;
@@ -160,10 +167,12 @@
   </style>
 </head>
 <body>
-  <!-- Control Center Toggle -->
-  <button id="controlToggle" onclick="toggleControlCenter()">Control Center</button>
+  <!-- Circular Trigger for Control Center (Swipe down on this circle to open the control center) -->
+  <div id="controlTrigger"></div>
+
   <!-- Control Center Panel -->
   <div id="controlCenter">
+    <button id="closeControlCenter" onclick="closeControlCenter()">Close</button>
     <strong>Control Center</strong>
     <button class="control-btn" onclick="alert('Wi-Fi toggled!')">Wi-Fi</button>
     <button class="control-btn" onclick="alert('Bluetooth toggled!')">Bluetooth</button>
@@ -246,23 +255,15 @@
     window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
     window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
-    // Toggle the control center panel
-    function toggleControlCenter() {
-      document.getElementById('controlCenter').classList.toggle('active');
-    }
-
-    // Launch a simulated app by hiding the home screen and showing the app container
+    // Functions for app navigation
     function launchApp(app) {
       document.getElementById('homeScreen').style.display = 'none';
       let apps = document.getElementsByClassName('app-container');
       for (let i = 0; i < apps.length; i++) {
         apps[i].style.display = 'none';
       }
-      // Show the selected app container (e.g., "appMail" for "mail")
       document.getElementById('app' + capitalize(app)).style.display = 'flex';
     }
-
-    // Return to the home screen
     function backToHome() {
       let apps = document.getElementsByClassName('app-container');
       for (let i = 0; i < apps.length; i++) {
@@ -270,13 +271,11 @@
       }
       document.getElementById('homeScreen').style.display = 'flex';
     }
-
-    // Helper function to capitalize first letter
     function capitalize(str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
-    // Basic voice assistant using the Web Speech API
+    // Voice Assistant using the Web Speech API
     function startAssistant() {
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         alert('Sorry, your browser doesn’t support speech recognition.');
@@ -295,6 +294,33 @@
       recognition.onerror = function(event) {
         alert('Oops, an error occurred: ' + event.error);
       };
+    }
+
+    // --- Control Center Swipe Gesture ---
+    const controlTrigger = document.getElementById('controlTrigger');
+    const controlCenter = document.getElementById('controlCenter');
+    let startY = null;
+
+    controlTrigger.addEventListener('touchstart', function(e) {
+      startY = e.touches[0].clientY;
+    });
+    controlTrigger.addEventListener('touchmove', function(e) {
+      if (!startY) return;
+      let diffY = e.touches[0].clientY - startY;
+      if (diffY > 50) {  // Swipe down threshold
+        openControlCenter();
+        startY = null;
+      }
+    });
+    controlTrigger.addEventListener('touchend', function(e) {
+      startY = null;
+    });
+
+    function openControlCenter() {
+      controlCenter.classList.add('active');
+    }
+    function closeControlCenter() {
+      controlCenter.classList.remove('active');
     }
   </script>
 </body>

@@ -5,115 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RandomOS</title>
   <style>
-    /* Dark theme base */
+    /* Base Styles (Dark Mode by Default) */
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
       background: #111;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: #ddd;
       transition: background 0.3s, color 0.3s;
     }
-    /* Wallpaper backgrounds (for settings) */
-    body.wallpaper-1 { background: #111; }
-    body.wallpaper-2 { background: url('https://via.placeholder.com/1920x1080/222/444?text=Wallpaper+2') center/cover no-repeat; }
+    /* Light Mode */
+    body.light-mode {
+      background: #ddd;
+      color: #222;
+    }
+    body.light-mode #dock {
+      background: rgba(200,200,200,0.7);
+    }
 
-    /* Dock at the bottom */
+    /* Dock */
     #dock {
       position: fixed;
-      bottom: 0;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
-      width: 90%;
-      height: 70px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
       display: flex;
-      justify-content: center;
-      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.6);
       padding: 10px;
       border-radius: 15px;
       z-index: 100;
     }
     .dock-icon {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       background: rgba(255,255,255,0.1);
-      border-radius: 10px;
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-size: 30px;
+      justify-content: center;
+      font-size: 24px;
       cursor: pointer;
-      margin: 0 10px;
+      border-radius: 10px;
       transition: transform 0.2s;
     }
     .dock-icon:hover {
       transform: scale(1.1);
     }
 
-    /* Control Center */
-    #controlCenter {
-      position: fixed;
-      top: -100%;
-      right: 10px;
-      width: 280px;
-      height: 320px;
-      background: rgba(0, 0, 0, 0.85);
-      border-radius: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-      padding: 15px;
-      z-index: 200;
-      transition: top 0.3s ease;
-    }
-    #controlCenter.active {
-      top: 10px;
-    }
-    #controlCenter button {
-      background: none;
-      border: none;
-      color: #bbb;
-      font-size: 16px;
-      float: right;
-      cursor: pointer;
-    }
-    #controlCenter label {
-      display: block;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    #controlCenter input[type="range"] {
-      width: 100%;
-    }
+    /* Control Center (if needed later) – not in this version */
 
-    /* App windows container */
-    #appContainer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: calc(100% - 70px);
-      pointer-events: none; /* windows themselves will have pointer-events */
-    }
+    /* Window Styles */
     .window {
       position: absolute;
       width: 600px;
       height: 400px;
       background: rgba(20,20,20,0.95);
       border: 1px solid #333;
-      border-radius: 8px;
+      border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.7);
       overflow: hidden;
-      pointer-events: auto;
+      resize: both;
+      min-width: 300px;
+      min-height: 200px;
     }
     .window-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       background: rgba(40,40,40,0.9);
       padding: 5px 10px;
-      font-size: 14px;
+      cursor: grab;
+      user-select: none;
     }
     .window-buttons {
       display: flex;
@@ -125,124 +88,110 @@
       border-radius: 50%;
       cursor: pointer;
     }
-    .win-btn.close { background: #aa3333; }
-    .win-btn.minimize { background: #aa8f00; }
-    .win-btn.fullscreen { background: #33aa33; }
-    .window-title {
-      flex-grow: 1;
-      text-align: center;
-      font-weight: bold;
-    }
+    .win-btn.close { background: #e74c3c; }
+    .win-btn.minimize { background: #f1c40f; }
+    .win-btn.fullscreen { background: #2ecc71; }
     .window-content {
-      padding: 10px;
       height: calc(100% - 30px);
       overflow: auto;
+      padding: 5px;
     }
 
-    /* Basic styling for each app's content */
+    /* Browser App Styles */
     .app-browser input[type="text"] {
-      width: calc(100% - 50px);
+      width: 80%;
       padding: 5px;
       font-size: 14px;
     }
     .app-browser button {
-      padding: 5px;
+      padding: 5px 10px;
       font-size: 14px;
     }
+    .app-browser iframe {
+      width: 100%;
+      height: 70%;
+      border: none;
+      margin-top: 10px;
+    }
+
+    /* Calendar App Styles */
     .app-calendar table {
       width: 100%;
       border-collapse: collapse;
     }
     .app-calendar th, .app-calendar td {
-      border: 1px solid #444;
+      border: 1px solid #555;
       padding: 5px;
       text-align: center;
       font-size: 12px;
     }
+
+    /* Settings App Styles */
     .app-settings label {
       display: block;
       margin: 10px 0 5px;
+      font-size: 14px;
     }
     .app-settings input[type="checkbox"] {
       margin-right: 5px;
     }
-    .app-settings select {
-      width: 100%;
-      padding: 5px;
-      font-size: 14px;
-    }
   </style>
 </head>
-<body class="wallpaper-1">
-  <!-- Dock -->
+<body>
+
+  <!-- Dock with App Icons -->
   <div id="dock">
     <div class="dock-icon" onclick="openApp('browser')">🌍</div>
     <div class="dock-icon" onclick="openApp('calendar')">📅</div>
     <div class="dock-icon" onclick="openApp('settings')">⚙️</div>
   </div>
 
-  <!-- Control Center -->
-  <div id="controlCenter">
-    <button onclick="toggleControlCenter()">✖</button>
-    <label>🔆 Brightness</label>
-    <input type="range" id="brightnessSlider" min="50" max="100" value="100" onchange="updateBrightness()">
-    <label>🔊 Volume</label>
-    <input type="range" id="volumeSlider" min="0" max="100" value="50">
-  </div>
-
-  <!-- App Windows Container -->
+  <!-- Container for App Windows -->
   <div id="appContainer"></div>
 
   <script>
-    /* Global variable to store last window position */
+    /* Keep track of last window offset so new windows spawn slightly offset */
     let lastWindowOffset = { top: 50, left: 50 };
 
-    /* Function to open an app window */
+    /* Open an app in a draggable, resizable window */
     function openApp(appName) {
-      // Create a new window container
       const win = document.createElement("div");
       win.className = "window";
-      // Offset new window if there's already one
       win.style.top = lastWindowOffset.top + "px";
       win.style.left = lastWindowOffset.left + "px";
+
       // Update offset for next window
       lastWindowOffset.top += 20;
       lastWindowOffset.left += 20;
-      // If offset goes off screen, reset
       if (lastWindowOffset.top > 200) lastWindowOffset.top = 50;
       if (lastWindowOffset.left > 200) lastWindowOffset.left = 50;
 
-      // Header with Mac-style buttons (non-draggable)
       let titleText = "";
       let contentHTML = "";
+
       if (appName === "browser") {
         titleText = "Browser";
         contentHTML = `
           <div class="app-browser">
-            <input type="text" id="urlInput" placeholder="Enter URL" value="https://example.com">
+            <input type="text" value="https://example.com">
             <button onclick="loadURL(this)">Go</button>
-            <iframe id="browserFrame" src="https://example.com" style="width:100%; height:calc(100% - 40px); border:none; margin-top:10px;"></iframe>
+            <iframe src="https://example.com"></iframe>
           </div>
         `;
       } else if (appName === "calendar") {
         titleText = "Calendar";
-        contentHTML = generateCalendarHTML();
+        contentHTML = `<div class="app-calendar">${generateCalendarHTML()}</div>`;
       } else if (appName === "settings") {
         titleText = "Settings";
         contentHTML = `
           <div class="app-settings">
             <label><input type="checkbox" id="toggleDark" onchange="toggleDarkMode()"> Dark Mode</label>
-            <label for="wallpaperSelect">Wallpaper:</label>
-            <select id="wallpaperSelect" onchange="changeWallpaper(this)">
-              <option value="wallpaper-1">Default</option>
-              <option value="wallpaper-2">Wallpaper 2</option>
-            </select>
           </div>
         `;
       }
 
       win.innerHTML = `
-        <div class="window-header">
+        <div class="window-header" onmousedown="startDrag(event, this.parentElement)">
           <div class="window-buttons">
             <div class="win-btn close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
             <div class="win-btn minimize" onclick="minimizeWindow(this)"></div>
@@ -250,80 +199,56 @@
           </div>
           <div class="window-title">${titleText}</div>
         </div>
-        <div class="window-content">
-          ${contentHTML}
-        </div>
+        <div class="window-content">${contentHTML}</div>
       `;
+
       document.getElementById("appContainer").appendChild(win);
     }
 
-    /* Browser App: Load URL in iframe */
+    /* Browser: Load URL into iframe */
     function loadURL(btn) {
-      const input = btn.parentElement.querySelector("input");
-      const url = input.value;
-      const iframe = btn.parentElement.querySelector("iframe");
-      iframe.src = url;
+      const input = btn.previousElementSibling;
+      const iframe = btn.nextElementSibling;
+      iframe.src = input.value;
     }
 
-    /* Calendar App: Generate a basic calendar for the current month */
+    /* Calendar: Generate basic calendar HTML for the current month */
     function generateCalendarHTML() {
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth();
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      let html = `<div class="app-calendar"><table><tr>`;
-      // Weekday headers
+      let html = `<table><tr>`;
       const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       weekdays.forEach(day => { html += `<th>${day}</th>`; });
       html += `</tr><tr>`;
-      // Empty cells before first day
       for (let i = 0; i < firstDay; i++) {
         html += `<td></td>`;
       }
-      // Days of the month
       for (let d = 1; d <= daysInMonth; d++) {
-        if ((d + firstDay - 1) % 7 === 0 && d !== 1) {
+        if ((d + firstDay - 1) % 7 === 0 && d > 1) {
           html += `</tr><tr>`;
         }
         html += `<td>${d}</td>`;
       }
-      html += `</tr></table></div>`;
+      html += `</tr></table>`;
       return html;
     }
 
-    /* Settings App: Toggle dark mode */
+    /* Settings: Toggle Dark Mode (switch between dark and light) */
     function toggleDarkMode() {
-      const chk = document.getElementById("toggleDark").checked;
-      if(chk) {
-        document.body.style.background = "#000";
-        document.body.style.color = "#aaa";
-      } else {
-        document.body.style.background = "#111";
-        document.body.style.color = "#ddd";
-      }
+      document.body.classList.toggle("light-mode");
     }
 
-    /* Settings App: Change wallpaper */
-    function changeWallpaper(select) {
-      document.body.className = "";
-      document.body.classList.add(select.value);
-    }
-
-    /* Window button functions (minimize/fullscreen placeholders) */
-    function minimizeWindow(btn) {
-      // For now, simply hide the window content
-      const win = btn.closest(".window");
-      const content = win.querySelector(".window-content");
-      content.style.display = content.style.display === "none" ? "block" : "none";
-    }
+    /* Window Controls: Fullscreen toggle */
     function toggleFullscreen(btn) {
       const win = btn.closest(".window");
-      if(!win.classList.contains("fullscreen-mode")){
+      if (!win.classList.contains("fullscreen-mode")) {
+        win.style.width = "100vw";
+        win.style.height = "100vh";
         win.style.top = "0";
         win.style.left = "0";
-        win.style.width = "100%";
-        win.style.height = "100%";
         win.classList.add("fullscreen-mode");
       } else {
         win.style.width = "600px";
@@ -334,15 +259,32 @@
       }
     }
 
-    /* Control Center Toggle */
-    function toggleControlCenter() {
-      document.getElementById("controlCenter").classList.toggle("active");
+    /* Window Controls: Minimize (for now, simply hide the window content) */
+    function minimizeWindow(btn) {
+      const win = btn.closest(".window");
+      const content = win.querySelector(".window-content");
+      content.style.display = content.style.display === "none" ? "block" : "none";
     }
 
-    /* Update brightness based on slider */
-    function updateBrightness() {
-      let brightness = document.getElementById("brightnessSlider").value;
-      document.body.style.filter = `brightness(${brightness}%)`;
+    /* Draggable Windows */
+    function startDrag(event, winElement) {
+      let shiftX = event.clientX - winElement.getBoundingClientRect().left;
+      let shiftY = event.clientY - winElement.getBoundingClientRect().top;
+
+      function moveAt(clientX, clientY) {
+        winElement.style.left = (clientX - shiftX) + 'px';
+        winElement.style.top = (clientY - shiftY) + 'px';
+      }
+
+      function onMouseMove(e) {
+        moveAt(e.clientX, e.clientY);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', function mouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', mouseUp);
+      });
     }
   </script>
 </body>

@@ -1,45 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RandomOS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>RandomOS with Physics Mascot</title>
+  <!-- Matter.js (Physics Engine) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" integrity="sha512-ZiUyTqEV0lx9z6O6+Xx5z3qimHQN1viXnW9XDTkXuqULn1tnyJILo6uP1Ja+OdPGq8/EFAv4hnuYSuDLy6PFug==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    /* Prevent the entire page from being dragged/scrolling on mobile */
+    /* Prevent the entire page from scrolling or dragging on mobile */
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      touch-action: none; /* disables default swipe/scroll on mobile */
+      touch-action: none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       transition: background 0.3s, color 0.3s, filter 0.3s;
-      background: #ddd; /* Light mode by default */
+      background: #ddd; /* Default to Light Mode */
       color: #222;
     }
-
-    /* Dark Mode */
     body.dark-mode {
       background: #111;
       color: #ddd;
     }
-
-    /* RandomOS Toggle (purely decorative - adjust as you like) */
     body.randomos-mode {
-      border: 5px solid #ff0000; /* Example effect: red border */
+      outline: 5px solid red; /* Just a silly example effect for "RandomOS Mode" */
     }
 
-    /* Brightness is adjusted via inline style filter, e.g. filter: brightness(120%); */
-
-    /* Mascot Image */
-    #mascot {
+    /* Canvas for Matter.js - behind everything else */
+    #physicsCanvas {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      width: 80px;
-      height: auto;
-      z-index: 999;
-      user-select: none;
-      pointer-events: none; /* so clicks pass through */
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0; /* behind the OS UI */
+      background: transparent;
+      pointer-events: none; /* let clicks pass through to windows/dock */
     }
 
     /* Dock */
@@ -50,30 +44,25 @@
       transform: translateX(-50%);
       display: flex;
       gap: 10px;
-      background: rgba(200,200,200,0.7); /* Light mode default */
+      background: rgba(200,200,200,0.7);
       padding: 10px;
       border-radius: 15px;
       z-index: 100;
       transition: background 0.3s;
     }
     body.dark-mode #dock {
-      background: rgba(0,0,0,0.6); /* Dark mode dock */
+      background: rgba(0,0,0,0.6);
     }
     .dock-icon {
-      width: 50px;
-      height: 50px;
+      width: 50px; height: 50px;
       background: rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 24px;
       cursor: pointer;
       border-radius: 10px;
       transition: transform 0.2s;
     }
-    .dock-icon:hover {
-      transform: scale(1.1);
-    }
+    .dock-icon:hover { transform: scale(1.1); }
     body.dark-mode .dock-icon {
       background: rgba(255,255,255,0.1);
     }
@@ -82,25 +71,22 @@
     #appContainer {
       position: absolute;
       top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none; /* windows themselves will have pointer-events */
+      width: 100%; height: 100%;
+      pointer-events: none; /* windows have pointer-events: auto */
     }
 
     /* Window Styles */
     .window {
       position: absolute;
-      width: 600px;
-      height: 400px;
+      width: 600px; height: 400px;
       background: rgba(240,240,240,0.95);
       border: 1px solid #999;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       overflow: hidden;
       resize: both;
-      min-width: 300px;
-      min-height: 200px;
-      pointer-events: auto;
+      min-width: 300px; min-height: 200px;
+      pointer-events: auto; /* so we can click inside */
     }
     body.dark-mode .window {
       background: rgba(20,20,20,0.95);
@@ -125,13 +111,12 @@
       gap: 5px;
     }
     .win-btn {
-      width: 12px;
-      height: 12px;
+      width: 12px; height: 12px;
       border-radius: 50%;
       cursor: pointer;
     }
-    .win-btn.close { background: #e74c3c; }
-    .win-btn.minimize { background: #f1c40f; }
+    .win-btn.close      { background: #e74c3c; }
+    .win-btn.minimize   { background: #f1c40f; }
     .win-btn.fullscreen { background: #2ecc71; }
 
     .window-content {
@@ -191,10 +176,8 @@
   </style>
 </head>
 <body class="light-mode" style="filter: brightness(100%);">
-  <!-- Mascot -->
-  <img id="mascot"
-       src="https://raw.githubusercontent.com/arandomdumdev/RandomOSWeb/main/mascot.png"
-       alt="RandomOS Mascot">
+  <!-- Canvas for Matter.js rendering the mascot -->
+  <canvas id="physicsCanvas"></canvas>
 
   <!-- Dock -->
   <div id="dock">
@@ -207,9 +190,114 @@
   <div id="appContainer"></div>
 
   <script>
+    /************************************************************
+     * 1) MATTER.JS PHYSICS SETUP (for the draggable mascot)
+     ************************************************************/
+    const Engine = Matter.Engine,
+          Render = Matter.Render,
+          Runner = Matter.Runner,
+          Bodies = Matter.Bodies,
+          Body   = Matter.Body,
+          Composite = Matter.Composite,
+          Mouse = Matter.Mouse,
+          MouseConstraint = Matter.MouseConstraint;
+
+    // Create engine and world
+    const engine = Engine.create();
+    const world  = engine.world;
+    world.gravity.y = 1; // slight gravity
+
+    // Canvas & Renderer for Matter.js
+    const canvas = document.getElementById("physicsCanvas");
+    const render = Render.create({
+      canvas: canvas,
+      engine: engine,
+      options: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        background: 'transparent',
+        wireframes: false
+      }
+    });
+    Render.run(render);
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    // Add walls (edges of screen)
+    const wallThickness = 100;
+    const floor = Bodies.rectangle(
+      window.innerWidth/2, window.innerHeight + wallThickness/2,
+      window.innerWidth, wallThickness,
+      { isStatic: true, render: { visible: false } }
+    );
+    const ceiling = Bodies.rectangle(
+      window.innerWidth/2, -wallThickness/2,
+      window.innerWidth, wallThickness,
+      { isStatic: true, render: { visible: false } }
+    );
+    const leftWall = Bodies.rectangle(
+      -wallThickness/2, window.innerHeight/2,
+      wallThickness, window.innerHeight,
+      { isStatic: true, render: { visible: false } }
+    );
+    const rightWall = Bodies.rectangle(
+      window.innerWidth + wallThickness/2, window.innerHeight/2,
+      wallThickness, window.innerHeight,
+      { isStatic: true, render: { visible: false } }
+    );
+    Composite.add(world, [floor, ceiling, leftWall, rightWall]);
+
+    // Add the mascot with sprite
+    const mascot = Bodies.circle(
+      window.innerWidth/2, window.innerHeight/4,
+      40, // radius
+      {
+        restitution: 0.8, // bounciness
+        friction: 0.1,
+        render: {
+          sprite: {
+            texture: "https://raw.githubusercontent.com/arandomdumdev/RandomOSWeb/main/mascot.png",
+            xScale: 0.5,
+            yScale: 0.5
+          }
+        }
+      }
+    );
+    Composite.add(world, mascot);
+
+    // Mouse constraint for dragging the mascot
+    const mouse = Mouse.create(render.canvas);
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 0.1,
+        render: { visible: false }
+      }
+    });
+    Composite.add(world, mouseConstraint);
+
+    // On window resize, update Matter render bounds
+    window.addEventListener('resize', () => {
+      render.bounds.max.x = window.innerWidth;
+      render.bounds.max.y = window.innerHeight;
+      render.options.width = window.innerWidth;
+      render.options.height = window.innerHeight;
+      Render.lookAt(render, {
+        min: { x: 0, y: 0 },
+        max: { x: window.innerWidth, y: window.innerHeight }
+      });
+      // Reposition walls
+      Body.setPosition(floor,  { x: window.innerWidth/2, y: window.innerHeight + wallThickness/2 });
+      Body.setPosition(ceiling,{ x: window.innerWidth/2, y: -wallThickness/2 });
+      Body.setPosition(leftWall,{ x: -wallThickness/2,   y: window.innerHeight/2 });
+      Body.setPosition(rightWall,{x: window.innerWidth + wallThickness/2, y: window.innerHeight/2 });
+    });
+
+    /************************************************************
+     * 2) RANDOMOS APP & WINDOW SYSTEM
+     ************************************************************/
     let lastWindowOffset = { top: 50, left: 50 };
 
-    /* Open an app in a draggable, resizable window */
     function openApp(appName) {
       const win = document.createElement("div");
       win.className = "window";
@@ -267,14 +355,12 @@
       document.getElementById("appContainer").appendChild(win);
     }
 
-    /* Load URL in the Browser app */
     function loadURL(btn) {
       const input = btn.previousElementSibling;
       const iframe = btn.parentElement.querySelector("iframe");
       iframe.src = input.value;
     }
 
-    /* Generate basic calendar for current month */
     function generateCalendarHTML() {
       const now = new Date();
       const year = now.getFullYear();
@@ -301,8 +387,8 @@
 
     /* Settings: Toggle Dark Mode */
     function toggleDarkMode() {
-      const checked = document.getElementById("toggleDark").checked;
-      if (checked) {
+      const chk = document.getElementById("toggleDark").checked;
+      if (chk) {
         document.body.classList.add("dark-mode");
         document.body.classList.remove("light-mode");
       } else {
@@ -313,8 +399,8 @@
 
     /* Settings: Toggle "RandomOS Mode" (example effect) */
     function toggleRandomMode() {
-      const checked = document.getElementById("toggleRandom").checked;
-      if (checked) {
+      const chk = document.getElementById("toggleRandom").checked;
+      if (chk) {
         document.body.classList.add("randomos-mode");
       } else {
         document.body.classList.remove("randomos-mode");
@@ -326,14 +412,14 @@
       document.body.style.filter = `brightness(${value}%)`;
     }
 
-    /* Minimize window (just hides content) */
+    /* Window Controls: Minimize (hide content) */
     function minimizeWindow(btn) {
       const win = btn.closest(".window");
       const content = win.querySelector(".window-content");
       content.style.display = (content.style.display === "none") ? "block" : "none";
     }
 
-    /* Fullscreen toggle */
+    /* Window Controls: Fullscreen toggle */
     function toggleFullscreen(btn) {
       const win = btn.closest(".window");
       if (!win.classList.contains("fullscreen-mode")) {
@@ -356,28 +442,26 @@
       }
     }
 
-    /* Drag support (mouse + touch) */
-    let dragData = null; // store drag info
+    /************************************************************
+     * 3) DRAGGING APP WINDOWS (Mouse + Touch)
+     ************************************************************/
+    let dragData = null;
 
     function startDrag(e, windowElement) {
       e.preventDefault();
 
-      // figure out initial pointer coords
       const isTouch = (e.type === 'touchstart');
       const startX = isTouch ? e.touches[0].clientX : e.clientX;
       const startY = isTouch ? e.touches[0].clientY : e.clientY;
 
-      // offset from window's current position
       const rect = windowElement.getBoundingClientRect();
       const offsetX = startX - rect.left;
       const offsetY = startY - rect.top;
 
       dragData = { windowElement, offsetX, offsetY };
 
-      // Listen for movement
       document.addEventListener('mousemove', doDrag);
       document.addEventListener('touchmove', doDrag, {passive: false});
-      // Listen for end
       document.addEventListener('mouseup', endDrag);
       document.addEventListener('touchend', endDrag);
     }
@@ -396,9 +480,7 @@
     }
 
     function endDrag(e) {
-      if (!dragData) return;
       dragData = null;
-
       document.removeEventListener('mousemove', doDrag);
       document.removeEventListener('touchmove', doDrag);
       document.removeEventListener('mouseup', endDrag);

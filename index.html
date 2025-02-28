@@ -1,27 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RandomOS</title>
   <style>
-    /* Base Styles (Dark Mode by Default) */
-    body {
+    /* Prevent the entire page from being dragged/scrolling on mobile */
+    html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #111;
+      touch-action: none; /* disables default swipe/scroll on mobile */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #ddd;
-      transition: background 0.3s, color 0.3s;
-    }
-    /* Light Mode */
-    body.light-mode {
-      background: #ddd;
+      transition: background 0.3s, color 0.3s, filter 0.3s;
+      background: #ddd; /* Light mode by default */
       color: #222;
     }
-    body.light-mode #dock {
-      background: rgba(200,200,200,0.7);
+
+    /* Dark Mode */
+    body.dark-mode {
+      background: #111;
+      color: #ddd;
+    }
+
+    /* RandomOS Toggle (purely decorative - adjust as you like) */
+    body.randomos-mode {
+      border: 5px solid #ff0000; /* Example effect: red border */
+    }
+
+    /* Brightness is adjusted via inline style filter, e.g. filter: brightness(120%); */
+
+    /* Mascot Image */
+    #mascot {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 80px;
+      height: auto;
+      z-index: 999;
+      user-select: none;
+      pointer-events: none; /* so clicks pass through */
     }
 
     /* Dock */
@@ -32,15 +50,19 @@
       transform: translateX(-50%);
       display: flex;
       gap: 10px;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(200,200,200,0.7); /* Light mode default */
       padding: 10px;
       border-radius: 15px;
       z-index: 100;
+      transition: background 0.3s;
+    }
+    body.dark-mode #dock {
+      background: rgba(0,0,0,0.6); /* Dark mode dock */
     }
     .dock-icon {
       width: 50px;
       height: 50px;
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -52,31 +74,51 @@
     .dock-icon:hover {
       transform: scale(1.1);
     }
+    body.dark-mode .dock-icon {
+      background: rgba(255,255,255,0.1);
+    }
 
-    /* Control Center (if needed later) – not in this version */
+    /* Windows Container */
+    #appContainer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* windows themselves will have pointer-events */
+    }
 
     /* Window Styles */
     .window {
       position: absolute;
       width: 600px;
       height: 400px;
-      background: rgba(20,20,20,0.95);
-      border: 1px solid #333;
+      background: rgba(240,240,240,0.95);
+      border: 1px solid #999;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       overflow: hidden;
       resize: both;
       min-width: 300px;
       min-height: 200px;
+      pointer-events: auto;
     }
+    body.dark-mode .window {
+      background: rgba(20,20,20,0.95);
+      border: 1px solid #333;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+    }
+
     .window-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(40,40,40,0.9);
+      background: #ccc;
       padding: 5px 10px;
       cursor: grab;
       user-select: none;
+    }
+    body.dark-mode .window-header {
+      background: rgba(40,40,40,0.9);
     }
     .window-buttons {
       display: flex;
@@ -91,13 +133,14 @@
     .win-btn.close { background: #e74c3c; }
     .win-btn.minimize { background: #f1c40f; }
     .win-btn.fullscreen { background: #2ecc71; }
+
     .window-content {
       height: calc(100% - 30px);
       overflow: auto;
       padding: 5px;
     }
 
-    /* Browser App Styles */
+    /* Browser App */
     .app-browser input[type="text"] {
       width: 80%;
       padding: 5px;
@@ -112,21 +155,28 @@
       height: 70%;
       border: none;
       margin-top: 10px;
+      background: #fff;
+    }
+    body.dark-mode .app-browser iframe {
+      background: #222;
     }
 
-    /* Calendar App Styles */
+    /* Calendar App */
     .app-calendar table {
       width: 100%;
       border-collapse: collapse;
     }
     .app-calendar th, .app-calendar td {
-      border: 1px solid #555;
+      border: 1px solid #aaa;
       padding: 5px;
       text-align: center;
       font-size: 12px;
     }
+    body.dark-mode .app-calendar th, body.dark-mode .app-calendar td {
+      border-color: #555;
+    }
 
-    /* Settings App Styles */
+    /* Settings App */
     .app-settings label {
       display: block;
       margin: 10px 0 5px;
@@ -135,32 +185,39 @@
     .app-settings input[type="checkbox"] {
       margin-right: 5px;
     }
+    .app-settings input[type="range"] {
+      width: 100%;
+    }
   </style>
 </head>
-<body>
+<body class="light-mode" style="filter: brightness(100%);">
+  <!-- Mascot -->
+  <img id="mascot"
+       src="https://raw.githubusercontent.com/arandomdumdev/RandomOSWeb/main/mascot.png"
+       alt="RandomOS Mascot">
 
-  <!-- Dock with App Icons -->
+  <!-- Dock -->
   <div id="dock">
     <div class="dock-icon" onclick="openApp('browser')">🌍</div>
     <div class="dock-icon" onclick="openApp('calendar')">📅</div>
     <div class="dock-icon" onclick="openApp('settings')">⚙️</div>
   </div>
 
-  <!-- Container for App Windows -->
+  <!-- Windows Container -->
   <div id="appContainer"></div>
 
   <script>
-    /* Keep track of last window offset so new windows spawn slightly offset */
     let lastWindowOffset = { top: 50, left: 50 };
 
     /* Open an app in a draggable, resizable window */
     function openApp(appName) {
       const win = document.createElement("div");
       win.className = "window";
+      // position new window
       win.style.top = lastWindowOffset.top + "px";
       win.style.left = lastWindowOffset.left + "px";
 
-      // Update offset for next window
+      // offset for next window
       lastWindowOffset.top += 20;
       lastWindowOffset.left += 20;
       if (lastWindowOffset.top > 200) lastWindowOffset.top = 50;
@@ -186,18 +243,23 @@
         contentHTML = `
           <div class="app-settings">
             <label><input type="checkbox" id="toggleDark" onchange="toggleDarkMode()"> Dark Mode</label>
+            <label><input type="checkbox" id="toggleRandom" onchange="toggleRandomMode()"> RandomOS Mode</label>
+            <label>Brightness:</label>
+            <input type="range" id="brightnessSlider" min="50" max="150" value="100" oninput="updateBrightness(this.value)">
           </div>
         `;
       }
 
       win.innerHTML = `
-        <div class="window-header" onmousedown="startDrag(event, this.parentElement)">
+        <div class="window-header"
+             onmousedown="startDrag(event, this.parentElement)"
+             ontouchstart="startDrag(event, this.parentElement)">
           <div class="window-buttons">
-            <div class="win-btn close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
+            <div class="win-btn close" onclick="this.closest('.window').remove()"></div>
             <div class="win-btn minimize" onclick="minimizeWindow(this)"></div>
             <div class="win-btn fullscreen" onclick="toggleFullscreen(this)"></div>
           </div>
-          <div class="window-title">${titleText}</div>
+          <div>${titleText}</div>
         </div>
         <div class="window-content">${contentHTML}</div>
       `;
@@ -205,14 +267,14 @@
       document.getElementById("appContainer").appendChild(win);
     }
 
-    /* Browser: Load URL into iframe */
+    /* Load URL in the Browser app */
     function loadURL(btn) {
       const input = btn.previousElementSibling;
-      const iframe = btn.nextElementSibling;
+      const iframe = btn.parentElement.querySelector("iframe");
       iframe.src = input.value;
     }
 
-    /* Calendar: Generate basic calendar HTML for the current month */
+    /* Generate basic calendar for current month */
     function generateCalendarHTML() {
       const now = new Date();
       const year = now.getFullYear();
@@ -223,11 +285,12 @@
       const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       weekdays.forEach(day => { html += `<th>${day}</th>`; });
       html += `</tr><tr>`;
+
       for (let i = 0; i < firstDay; i++) {
         html += `<td></td>`;
       }
       for (let d = 1; d <= daysInMonth; d++) {
-        if ((d + firstDay - 1) % 7 === 0 && d > 1) {
+        if ((d + firstDay - 1) % 7 === 0 && d !== 1) {
           html += `</tr><tr>`;
         }
         html += `<td>${d}</td>`;
@@ -236,55 +299,110 @@
       return html;
     }
 
-    /* Settings: Toggle Dark Mode (switch between dark and light) */
+    /* Settings: Toggle Dark Mode */
     function toggleDarkMode() {
-      document.body.classList.toggle("light-mode");
+      const checked = document.getElementById("toggleDark").checked;
+      if (checked) {
+        document.body.classList.add("dark-mode");
+        document.body.classList.remove("light-mode");
+      } else {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+      }
     }
 
-    /* Window Controls: Fullscreen toggle */
+    /* Settings: Toggle "RandomOS Mode" (example effect) */
+    function toggleRandomMode() {
+      const checked = document.getElementById("toggleRandom").checked;
+      if (checked) {
+        document.body.classList.add("randomos-mode");
+      } else {
+        document.body.classList.remove("randomos-mode");
+      }
+    }
+
+    /* Settings: Brightness Slider */
+    function updateBrightness(value) {
+      document.body.style.filter = `brightness(${value}%)`;
+    }
+
+    /* Minimize window (just hides content) */
+    function minimizeWindow(btn) {
+      const win = btn.closest(".window");
+      const content = win.querySelector(".window-content");
+      content.style.display = (content.style.display === "none") ? "block" : "none";
+    }
+
+    /* Fullscreen toggle */
     function toggleFullscreen(btn) {
       const win = btn.closest(".window");
       if (!win.classList.contains("fullscreen-mode")) {
-        win.style.width = "100vw";
-        win.style.height = "100vh";
         win.style.top = "0";
         win.style.left = "0";
+        win.style.width = "100vw";
+        win.style.height = "100vh";
         win.classList.add("fullscreen-mode");
       } else {
         win.style.width = "600px";
         win.style.height = "400px";
+        // place it at the next offset
         win.style.top = lastWindowOffset.top + "px";
         win.style.left = lastWindowOffset.left + "px";
+        lastWindowOffset.top += 20;
+        lastWindowOffset.left += 20;
+        if (lastWindowOffset.top > 200) lastWindowOffset.top = 50;
+        if (lastWindowOffset.left > 200) lastWindowOffset.left = 50;
         win.classList.remove("fullscreen-mode");
       }
     }
 
-    /* Window Controls: Minimize (for now, simply hide the window content) */
-    function minimizeWindow(btn) {
-      const win = btn.closest(".window");
-      const content = win.querySelector(".window-content");
-      content.style.display = content.style.display === "none" ? "block" : "none";
+    /* Drag support (mouse + touch) */
+    let dragData = null; // store drag info
+
+    function startDrag(e, windowElement) {
+      e.preventDefault();
+
+      // figure out initial pointer coords
+      const isTouch = (e.type === 'touchstart');
+      const startX = isTouch ? e.touches[0].clientX : e.clientX;
+      const startY = isTouch ? e.touches[0].clientY : e.clientY;
+
+      // offset from window's current position
+      const rect = windowElement.getBoundingClientRect();
+      const offsetX = startX - rect.left;
+      const offsetY = startY - rect.top;
+
+      dragData = { windowElement, offsetX, offsetY };
+
+      // Listen for movement
+      document.addEventListener('mousemove', doDrag);
+      document.addEventListener('touchmove', doDrag, {passive: false});
+      // Listen for end
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchend', endDrag);
     }
 
-    /* Draggable Windows */
-    function startDrag(event, winElement) {
-      let shiftX = event.clientX - winElement.getBoundingClientRect().left;
-      let shiftY = event.clientY - winElement.getBoundingClientRect().top;
+    function doDrag(e) {
+      if (!dragData) return;
+      e.preventDefault();
 
-      function moveAt(clientX, clientY) {
-        winElement.style.left = (clientX - shiftX) + 'px';
-        winElement.style.top = (clientY - shiftY) + 'px';
-      }
+      const isTouch = (e.type === 'touchmove');
+      const currentX = isTouch ? e.touches[0].clientX : e.clientX;
+      const currentY = isTouch ? e.touches[0].clientY : e.clientY;
 
-      function onMouseMove(e) {
-        moveAt(e.clientX, e.clientY);
-      }
+      const win = dragData.windowElement;
+      win.style.left = (currentX - dragData.offsetX) + 'px';
+      win.style.top  = (currentY - dragData.offsetY) + 'px';
+    }
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', function mouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', mouseUp);
-      });
+    function endDrag(e) {
+      if (!dragData) return;
+      dragData = null;
+
+      document.removeEventListener('mousemove', doDrag);
+      document.removeEventListener('touchmove', doDrag);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchend', endDrag);
     }
   </script>
 </body>

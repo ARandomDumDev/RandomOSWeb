@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random OS Web</title>
+  <style>
+    /* Disable scrolling on the page */
+    html, body {
+      overflow: hidden;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f5;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    /* Home screen styling */
+    .home-screen {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      height: calc(100% - 60px); /* Reserve space for the dock */
+      align-content: flex-start;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .app-icon {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      background: #fff;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .app-icon:hover {
+      transform: scale(1.1);
+    }
+    .app-icon img {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+    }
+    .app-icon span {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #333;
+      text-align: center;
+    }
+    /* Dock styling at the bottom for Random The Assistant */
+    .dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .assistant-btn {
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .assistant-btn:hover {
+      background: #005bb5;
+    }
+    /* Simple Control Center styling */
+    .control-center {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 200px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      display: none;
+      flex-direction: column;
+    }
+    .control-center.active {
+      display: flex;
+    }
+    .control-btn {
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    /* Control center toggle button styling */
+    .control-toggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Control Center Toggle Button -->
+  <button class="control-toggle" onclick="toggleControlCenter()">Control Center</button>
+
+  <!-- Control Center Panel -->
+  <div class="control-center" id="controlCenter">
+    <strong>Control Center</strong>
+    <button class="control-btn" onclick="alert('Toggling Wi-Fi!')">Wi-Fi</button>
+    <button class="control-btn" onclick="alert('Toggling Bluetooth!')">Bluetooth</button>
+    <button class="control-btn" onclick="alert('Adjusting Brightness!')">Brightness</button>
+  </div>
+
+  <!-- Home screen with app icons -->
+  <div class="home-screen">
+    <div class="app-icon" onclick="launchApp('Mail')">
+      <img src="https://via.placeholder.com/50" alt="Mail Icon">
+      <span>Random Mail</span>
+    </div>
+    <div class="app-icon" onclick="launchApp('Safari')">
+      <img src="https://via.placeholder.com/50" alt="Safari Icon">
+      <span>Random Safari</span>
+    </div>
+    <div class="app-icon" onclick="launchApp('Calendar')">
+      <img src="https://via.placeholder.com/50" alt="Calendar Icon">
+      <span>Random Calendar</span>
+    </div>
+    <div class="app-icon" onclick="launchApp('Photos')">
+      <img src="https://via.placeholder.com/50" alt="Photos Icon">
+      <span>Random Photos</span>
+    </div>
+    <!-- More icons can be added similarly -->
+  </div>
+
+  <!-- Dock with Random The Assistant -->
+  <div class="dock">
+    <button class="assistant-btn" onclick="startAssistant()">Hey, Random</button>
+  </div>
+
+  <script>
+    // Prevent scrolling via mouse wheel and touch events
+    window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+    window.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    // Function to simulate launching an app
+    function launchApp(appName) {
+      alert('Launching Random ' + appName + '!');
+    }
+
+    // Toggle the visibility of the Control Center
+    function toggleControlCenter() {
+      const cc = document.getElementById('controlCenter');
+      cc.classList.toggle('active');
+    }
+
+    // Basic voice assistant integration using the Web Speech API
+    function startAssistant() {
+      // Check for browser support
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Sorry, your browser doesn’t support speech recognition.');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const command = event.results[0][0].transcript;
+        alert('Random The Assistant heard: "' + command + '"');
+        // You can add logic here to process the command further.
+      };
+
+      recognition.onerror = function(event) {
+        alert('Oops, an error occurred: ' + event.error);
+      };
+    }
+  </script>
+</body>
+</html>

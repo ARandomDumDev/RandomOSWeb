@@ -6,67 +6,87 @@
     <title>RandomOS</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: black;
+            font-family: -apple-system, BlinkMacSystemFont, "San Francisco", sans-serif;
+            background-color: #F0F0F5;
             margin: 0;
             overflow: hidden;
-            color: white;
+            color: #333;
         }
 
         /* Dock */
         #dock {
             position: fixed;
-            bottom: 10px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(50, 50, 50, 0.8);
-            padding: 10px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
         .dock-icon {
-            font-size: 30px;
+            font-size: 24px;
             cursor: pointer;
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+
+        .dock-icon:hover {
+            transform: scale(1.2);
         }
 
         /* Windows */
         .window {
             position: absolute;
-            width: 300px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             resize: both;
-            overflow: auto;
+            overflow: hidden;
         }
 
         .window-header {
-            background: gray;
-            padding: 5px;
+            background: #F5F5F7;
+            padding: 8px 12px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             cursor: move;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .window-title {
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .window-buttons {
             display: flex;
-            gap: 5px;
+            gap: 8px;
         }
 
-        .window-buttons div {
+        .window-button {
             width: 12px;
             height: 12px;
             border-radius: 50%;
             cursor: pointer;
         }
 
-        .close { background: red; }
-        .minimize { background: yellow; }
-        .fullscreen { background: green; }
+        .close { background: #FF5F57; }
+        .minimize { background: #FFBD2E; }
+        .fullscreen { background: #28C840; }
+
+        .window-content {
+            padding: 15px;
+            height: calc(100% - 40px);
+            overflow: auto;
+        }
 
         /* Mascot */
         #mascot {
@@ -77,28 +97,59 @@
             top: 50%;
             transform: translate(-50%, -50%);
             user-select: none;
+            cursor: grab;
+        }
+
+        #mascot:active {
+            cursor: grabbing;
         }
 
         /* Control Center */
         #control-center {
             position: fixed;
-            top: 0;
-            right: -300px;
-            width: 250px;
-            height: 100vh;
-            background: rgba(50, 50, 50, 0.9);
-            transition: right 0.3s ease-in-out;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            display: none;
         }
 
         #control-center.open {
-            right: 0;
+            display: block;
         }
 
         #sliders {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
+        }
+
+        label {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #007AFF;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
         }
 
         iframe {
@@ -111,115 +162,39 @@
 <body>
     <!-- Dock -->
     <div id="dock">
-        <div class="dock-icon" onclick="openApp('calendar')">📅</div>
-        <div class="dock-icon" onclick="openApp('settings')">⚙️</div>
-        <div class="dock-icon" onclick="openApp('browser')">🌍</div>
+        <div class="dock-icon" onclick="openApp('calendar')" title="Calendar">📅</div>
+        <div class="dock-icon" onclick="openApp('settings')" title="Settings">⚙️</div>
+        <div class="dock-icon" onclick="openApp('browser')" title="Browser">🌍</div>
     </div>
 
     <!-- Mascot -->
-    <img src="https://i.ibb.co/XffN5T0z/Untitled93-0000-02-46-20250204170936.png" id="mascot">
+    <img src="https://i.ibb.co/XffN5T0z/Untitled93-0000-02-46-20250204170936.png" id="mascot" alt="Mascot">
 
     <!-- Control Center -->
     <div id="control-center">
         <div id="sliders">
-            <label>Brightness</label>
-            <input type="range" id="brightness-slider" min="0" max="100">
-            <label>Volume</label>
-            <input type="range" id="volume-slider" min="0" max="100">
+            <div>
+                <label for="brightness-slider">Brightness</label>
+                <input type="range" id="brightness-slider" min="0" max="100" value="100">
+            </div>
+            <div>
+                <label for="volume-slider">Volume</label>
+                <input type="range" id="volume-slider" min="0" max="100" value="50">
+            </div>
         </div>
     </div>
 
-    <!-- Windows -->
+    <!-- Windows Container -->
     <div id="window-container"></div>
 
     <script>
         let windowOffset = 0;
 
         function openApp(appName) {
-            let win = document.createElement("div");
+            const win = document.createElement("div");
             win.classList.add("window");
             win.style.left = 100 + windowOffset + "px";
             win.style.top = 100 + windowOffset + "px";
-            windowOffset += 20;
+            windowOffset = (windowOffset + 20) % 100;
 
-            let content = "";
-            if (appName === "calendar") content = "<h2>📅 Calendar</h2><p>Today is a great day!</p>";
-            if (appName === "settings") content = "<h2>⚙️ Settings</h2><p>Toggle options here.</p>";
-            if (appName === "browser") content = "<iframe src='https://arandomdumdev.github.io/RandomOSWeb/'></iframe>";
-
-            win.innerHTML = `
-                <div class="window-header">
-                    <div class="window-buttons">
-                        <div class="close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
-                        <div class="minimize"></div>
-                        <div class="fullscreen"></div>
-                    </div>
-                    ${appName}
-                </div>
-                <div class="window-content">${content}</div>
-            `;
-            document.getElementById("window-container").appendChild(win);
-
-            makeDraggable(win);
-        }
-
-        function makeDraggable(win) {
-            let header = win.querySelector(".window-header");
-            let isDragging = false;
-            let offsetX, offsetY;
-
-            header.addEventListener("mousedown", (e) => {
-                isDragging = true;
-                offsetX = e.clientX - win.offsetLeft;
-                offsetY = e.clientY - win.offsetTop;
-            });
-
-            document.addEventListener("mousemove", (e) => {
-                if (isDragging) {
-                    win.style.left = e.clientX - offsetX + "px";
-                    win.style.top = e.clientY - offsetY + "px";
-                }
-            });
-
-            document.addEventListener("mouseup", () => isDragging = false);
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const mascot = document.getElementById("mascot");
-            let dx = 2, dy = 2;
-
-            function moveMascot() {
-                let rect = mascot.getBoundingClientRect();
-                let docWidth = window.innerWidth;
-                let docHeight = window.innerHeight;
-
-                if (rect.left <= 0 || rect.right >= docWidth) dx *= -1;
-                if (rect.top <= 0 || rect.bottom >= docHeight) dy *= -1;
-
-                mascot.style.left = rect.left + dx + "px";
-                mascot.style.top = rect.top + dy + "px";
-
-                requestAnimationFrame(moveMascot);
-            }
-            moveMascot();
-        });
-
-        // Open Control Center on swipe from top right
-        let touchStartY;
-        document.addEventListener("touchstart", (e) => touchStartY = e.touches[0].clientY);
-
-        document.addEventListener("touchend", (e) => {
-            let touchEndY = e.changedTouches[0].clientY;
-            if (touchStartY > touchEndY + 50) {
-                document.getElementById("control-center").classList.add("open");
-            }
-        });
-
-        document.addEventListener("click", (e) => {
-            if (!document.getElementById("control-center").contains(e.target)) {
-                document.getElementById("control-center").classList.remove("open");
-            }
-        });
-    </script>
-</body>
-</html>
+            let content = 

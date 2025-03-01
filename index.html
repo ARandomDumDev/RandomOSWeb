@@ -5,59 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RandomOS</title>
     <style>
-        /* Apple System Fonts */
+        /* General Styles */
         body {
             margin: 0;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #1e1e1e;
-            color: white;
-            transition: background 0.3s, color 0.3s;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f0f5;
+            color: #000;
         }
 
-        .light-mode {
-            background: #f0f0f0;
-            color: black;
-        }
-
-        /* Dock */
+        /* Dock Styles */
         #dock {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 20px;
             display: flex;
             gap: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
         }
 
         .dock-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 20%;
+            font-size: 40px;
             cursor: pointer;
             transition: transform 0.2s;
         }
 
         .dock-icon:hover {
-            transform: scale(1.2);
+            transform: scale(1.1);
         }
 
-        /* Window System */
+        /* Window Styles */
         .window {
             position: absolute;
-            width: 800px;
-            height: 600px;
-            background: rgba(50, 50, 50, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            height: 500px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            resize: both;
             display: flex;
             flex-direction: column;
+            resize: both;
         }
 
         .window-header {
@@ -65,7 +57,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            background: #333;
+            background: #f7f7f7;
+            border-bottom: 1px solid #ddd;
             cursor: grab;
         }
 
@@ -78,23 +71,111 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
+            background-color: #ccc;
         }
-
-        .close { background: red; }
-        .minimize { background: yellow; }
-        .fullscreen { background: green; }
 
         .window-content {
             flex-grow: 1;
-            background: white;
-            color: black;
-            padding: 0;
+            padding: 15px;
+            overflow-y: auto;
         }
 
-        iframe {
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .toggle-switch label {
+            font-size: 16px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4cd964;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Custom Slider Styles */
+        .slider-container {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .slider-container label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .custom-slider {
+            -webkit-appearance: none;
             width: 100%;
-            height: 100%;
-            border: none;
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: opacity 0.2s;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4cd964;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .custom-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4cd964;
+            border-radius: 50%;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -102,9 +183,9 @@
 
     <!-- Dock -->
     <div id="dock">
-        <img src="https://example.com/icons/calendar.png" class="dock-icon" onclick="openApp('calendar')" title="Calendar">
-        <img src="https://example.com/icons/settings.png" class="dock-icon" onclick="openApp('settings')" title="Settings">
-        <img src="https://example.com/icons/browser.png" class="dock-icon" onclick="openApp('browser')" title="Browser">
+        <div class="dock-icon" onclick="openApp('calendar')" title="Calendar">📅</div>
+        <div class="dock-icon" onclick="openApp('settings')" title="Settings">⚙️</div>
+        <div class="dock-icon" onclick="openApp('browser')" title="Browser">🌐</div>
     </div>
 
     <!-- Windows Container -->
@@ -125,25 +206,14 @@
             header.innerHTML = `
                 <span>${appName.charAt(0).toUpperCase() + appName.slice(1)}</span>
                 <div class="window-buttons">
-                    <div class="window-button close" onclick="closeWindow(this)"></div>
-                    <div class="window-button minimize"></div>
-                    <div class="window-button fullscreen"></div>
+                    <div class="window-button" onclick="closeWindow(this)"></div>
                 </div>
             `;
+            win.appendChild(header);
 
             const content = document.createElement("div");
             content.classList.add("window-content");
 
             if (appName === "calendar") {
-                content.innerHTML = `<iframe src="https://calendar.google.com/calendar/embed?src=67228056bf6871beeecd69dc7090ac2d60698725e55285baf0844d528d4274ef%40group.calendar.google.com&ctz=Asia%2FManila" style="border: 0; width: 100%; height: 100%;" frameborder="0" scrolling="no"></iframe>`;
-            } else if (appName === "browser") {
-                content.innerHTML = `<iframe src="https://www.google.com" style="border: 0; width: 100%; height: 100%;" frameborder="0" scrolling="yes"></iframe>`;
-            } else if (appName === "settings") {
-                content.innerHTML = `<p>Settings content goes here.</p>`;
-            }
-
-            win.appendChild(header);
-            win.appendChild(content);
-            document.getElementById("window-container").appendChild(win);
-
-            
+                content.innerHTML = `
+                    <iframe 

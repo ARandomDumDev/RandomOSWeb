@@ -1,199 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RandomOS</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.11/interact.min.js"></script>
-  <style>
-    /* Basic Styles */
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RandomOS</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: black;
+            margin: 0;
+            overflow: hidden;
+        }
 
-    /* Dock */
-    .dock {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      background: rgba(50, 50, 50, 0.8);
-      padding: 10px;
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-    }
-    .dock img {
-      width: 50px;
-      height: 50px;
-      margin: 5px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
+        /* Dock */
+        #dock {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(50, 50, 50, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+        }
 
-    /* App Windows */
-    .window {
-      position: absolute;
-      width: 400px;
-      height: 300px;
-      background: rgba(30, 30, 30, 0.9);
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
-    }
-    .title-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px;
-      background: rgba(20, 20, 20, 0.8);
-      border-radius: 10px 10px 0 0;
-      cursor: grab;
-    }
-    .title-bar .buttons {
-      display: flex;
-    }
-    .title-bar .buttons div {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin: 3px;
-      cursor: pointer;
-    }
-    .close { background: red; }
-    .minimize { background: yellow; }
-    .fullscreen { background: green; }
+        .dock-icon {
+            font-size: 30px;
+            cursor: pointer;
+        }
 
-    /* Control Center */
-    .control-center {
-      position: fixed;
-      top: -100%;
-      right: 10px;
-      width: 250px;
-      background: rgba(20, 20, 20, 0.9);
-      padding: 15px;
-      border-radius: 15px;
-      transition: top 0.3s;
-      backdrop-filter: blur(10px);
-    }
-    .slider {
-      width: 100%;
-      margin: 10px 0;
-    }
+        /* Windows */
+        .window {
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            resize: both;
+            overflow: auto;
+        }
 
-    /* Mascot */
-    #physicsCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-    }
+        .window-header {
+            background: gray;
+            padding: 5px;
+            display: flex;
+            justify-content: space-between;
+            cursor: move;
+        }
 
-  </style>
+        .window-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .window-buttons div {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .close { background: red; }
+        .minimize { background: yellow; }
+        .fullscreen { background: green; }
+
+        /* Mascot */
+        #mascot {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Control Center */
+        #control-center {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 250px;
+            height: 100vh;
+            background: rgba(50, 50, 50, 0.9);
+            transition: right 0.3s ease-in-out;
+            padding: 20px;
+        }
+
+        #control-center.open {
+            right: 0;
+        }
+
+        #sliders {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
+    <!-- Dock -->
+    <div id="dock">
+        <div class="dock-icon" onclick="openApp('calendar')">📅</div>
+        <div class="dock-icon" onclick="openApp('settings')">⚙️</div>
+        <div class="dock-icon" onclick="openApp('browser')">🌍</div>
+    </div>
 
-  <!-- Dock -->
-  <div class="dock">
-    <img src="https://cdn-icons-png.flaticon.com/512/755/755990.png" onclick="openApp('calendar')" title="📅">
-    <img src="https://cdn-icons-png.flaticon.com/512/126/126472.png" onclick="openApp('settings')" title="⚙️">
-    <img src="https://cdn-icons-png.flaticon.com/512/732/732212.png" onclick="openApp('browser')" title="🌐">
-  </div>
+    <!-- Mascot -->
+    <img src="mascot.png" id="mascot">
 
-  <!-- Control Center -->
-  <div class="control-center" id="controlCenter">
-    <label>Brightness</label>
-    <input type="range" class="slider" id="brightness" min="10" max="100" value="100">
-    <label>Volume</label>
-    <input type="range" class="slider" id="volume" min="0" max="100" value="50">
-  </div>
-
-  <!-- Physics Canvas for Mascot -->
-  <canvas id="physicsCanvas"></canvas>
-
-  <script>
-    // Open app windows
-    function openApp(app) {
-      let appWindow = document.createElement("div");
-      appWindow.classList.add("window");
-      appWindow.innerHTML = `
-        <div class="title-bar">
-          <div>${app.toUpperCase()}</div>
-          <div class="buttons">
-            <div class="close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
-            <div class="minimize"></div>
-            <div class="fullscreen"></div>
-          </div>
+    <!-- Control Center -->
+    <div id="control-center">
+        <div id="sliders">
+            <label>Brightness</label>
+            <input type="range" id="brightness-slider" min="0" max="100">
+            <label>Volume</label>
+            <input type="range" id="volume-slider" min="0" max="100">
         </div>
-        <div class="content">
-          ${app === "browser" ? `<iframe src="https://arandomdumdev.github.io/RandomOSWeb/" style="width:100%;height:100%;border:none;"></iframe>` : ""}
-          ${app === "calendar" ? `<p>Calendar App</p>` : ""}
-          ${app === "settings" ? `<p>Settings App</p>` : ""}
-        </div>
-      `;
-      document.body.appendChild(appWindow);
+    </div>
 
-      // Make window draggable and resizable
-      interact(appWindow).draggable({
-        inertia: true,
-        modifiers: [
-          interact.modifiers.restrictRect({
-            restriction: "parent",
-            endOnly: true
-          })
-        ],
-        listeners: { move(event) { 
-          let x = (parseFloat(event.target.getAttribute('data-x')) || 0) + event.dx;
-          let y = (parseFloat(event.target.getAttribute('data-y')) || 0) + event.dy;
-          event.target.style.transform = `translate(${x}px, ${y}px)`;
-          event.target.setAttribute('data-x', x);
-          event.target.setAttribute('data-y', y);
-        } }
-      }).resizable({
-        edges: { left: true, right: true, top: true, bottom: true }
-      });
-    }
+    <!-- Windows -->
+    <div id="window-container"></div>
 
-    // Control Center Swipe Down
-    document.addEventListener("touchstart", function(e) {
-      if (e.touches[0].clientY < 50 && e.touches[0].clientX > window.innerWidth - 100) {
-        document.getElementById("controlCenter").style.top = "10px";
-      }
-    });
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const mascot = document.getElementById("mascot");
+            let dx = 2, dy = 2;
+https://github.com/ARandomDumDev/RandomOSWeb/edit/main/index.html
+            function moveMascot() {
+                let rect = mascot.getBoundingClientRect();
+                if (rect.left <= 0 || rect.right >= window.innerWidth) dx *= -1;
+                if (rect.top <= 0 || rect.bottom >= window.innerHeight) dy *= -1;
+                mascot.style.left = rect.left + dx + "px";
+                mascot.style.top = rect.top + dy + "px";
+                requestAnimationFrame(moveMascot);
+            }
+            moveMascot();
 
-    // Matter.js Physics for Mascot
-    const Engine = Matter.Engine, Render = Matter.Render, Runner = Matter.Runner, Bodies = Matter.Bodies, Composite = Matter.Composite;
-    const engine = Engine.create();
-    const world = engine.world;
-    const render = Render.create({
-      canvas: document.getElementById('physicsCanvas'),
-      engine: engine,
-      options: { width: window.innerWidth, height: window.innerHeight, background: 'transparent', wireframes: false }
-    });
-    Render.run(render);
-    Runner.run(Runner.create(), engine);
+            function openApp(appName) {
+                let win = document.createElement("div");
+                win.classList.add("window");
+                win.innerHTML = `
+                    <div class="window-header">
+                        <div class="window-buttons">
+                            <div class="close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
+                            <div class="minimize"></div>
+                            <div class="fullscreen"></div>
+                        </div>
+                        ${appName}
+                    </div>
+                    <div class="window-content">${appName === "browser" ? "<iframe src='https://arandomdumdev.github.io/RandomOSWeb/'></iframe>" : "App content here"}</div>
+                `;
+                document.getElementById("window-container").appendChild(win);
 
-    // Walls
-    const ground = Bodies.rectangle(window.innerWidth / 2, window.innerHeight, window.innerWidth, 50, { isStatic: true });
-    const leftWall = Bodies.rectangle(0, window.innerHeight / 2, 50, window.innerHeight, { isStatic: true });
-    const rightWall = Bodies.rectangle(window.innerWidth, window.innerHeight / 2, 50, window.innerHeight, { isStatic: true });
-    Composite.add(world, [ground, leftWall, rightWall]);
+                // Make it draggable
+                let isDragging = false;
+                let offsetX, offsetY;
 
-    // Mascot with Bouncy Physics
-    const mascot = Bodies.circle(window.innerWidth / 2, 200, 40, {
-      restitution: 0.9, friction: 0.1, density: 0.05,
-      render: { sprite: { texture: "https://i.ibb.co/XffN5T0z/Untitled93-0000-02-46-20250204170936.png", xScale: 0.5, yScale: 0.5 } }
-    });
-    Composite.add(world, mascot);
-  </script>
+                win.querySelector(".window-header").addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    offsetX = e.clientX - win.offsetLeft;
+                    offsetY = e.clientY - win.offsetTop;
+                });
+
+                document.addEventListener("mousemove", (e) => {
+                    if (isDragging) {
+                        win.style.left = e.clientX - offsetX + "px";
+                        win.style.top = e.clientY - offsetY + "px";
+                    }
+                });
+
+                document.addEventListener("mouseup", () => isDragging = false);
+            }
+
+            // Open Control Center on swipe down from top right
+            let touchStartY;
+            document.addEventListener("touchstart", (e) => {
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener("touchend", (e) => {
+                let touchEndY = e.changedTouches[0].clientY;
+                if (touchStartY > touchEndY + 50) {
+                    document.getElementById("control-center").classList.add("open");
+                }
+            });
+
+            // Close Control Center on click outside
+            document.addEventListener("click", (e) => {
+                if (!document.getElementById("control-center").contains(e.target)) {
+                    document.getElementById("control-center").classList.remove("open");
+                }
+            });
+        });
+    </script>
 </body>
 </html>

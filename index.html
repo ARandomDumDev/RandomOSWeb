@@ -10,6 +10,7 @@
             background: black;
             margin: 0;
             overflow: hidden;
+            color: white;
         }
 
         /* Dock */
@@ -75,6 +76,7 @@
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
+            user-select: none;
         }
 
         /* Control Center */
@@ -98,6 +100,12 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -109,7 +117,7 @@
     </div>
 
     <!-- Mascot -->
-    <img src="mascot.png" id="mascot">
+    <img src="https://i.ibb.co/XffN5T0z/Untitled93-0000-02-46-20250204170936.png" id="mascot">
 
     <!-- Control Center -->
     <div id="control-center">
@@ -125,75 +133,92 @@
     <div id="window-container"></div>
 
     <script>
+        let windowOffset = 0;
+
+        function openApp(appName) {
+            let win = document.createElement("div");
+            win.classList.add("window");
+            win.style.left = 100 + windowOffset + "px";
+            win.style.top = 100 + windowOffset + "px";
+            windowOffset += 20;
+
+            let content = "";
+            if (appName === "calendar") content = "<h2>📅 Calendar</h2><p>Today is a great day!</p>";
+            if (appName === "settings") content = "<h2>⚙️ Settings</h2><p>Toggle options here.</p>";
+            if (appName === "browser") content = "<iframe src='https://arandomdumdev.github.io/RandomOSWeb/'></iframe>";
+
+            win.innerHTML = `
+                <div class="window-header">
+                    <div class="window-buttons">
+                        <div class="close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
+                        <div class="minimize"></div>
+                        <div class="fullscreen"></div>
+                    </div>
+                    ${appName}
+                </div>
+                <div class="window-content">${content}</div>
+            `;
+            document.getElementById("window-container").appendChild(win);
+
+            makeDraggable(win);
+        }
+
+        function makeDraggable(win) {
+            let header = win.querySelector(".window-header");
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.addEventListener("mousedown", (e) => {
+                isDragging = true;
+                offsetX = e.clientX - win.offsetLeft;
+                offsetY = e.clientY - win.offsetTop;
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (isDragging) {
+                    win.style.left = e.clientX - offsetX + "px";
+                    win.style.top = e.clientY - offsetY + "px";
+                }
+            });
+
+            document.addEventListener("mouseup", () => isDragging = false);
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const mascot = document.getElementById("mascot");
             let dx = 2, dy = 2;
-https://github.com/ARandomDumDev/RandomOSWeb/edit/main/index.html
+
             function moveMascot() {
                 let rect = mascot.getBoundingClientRect();
-                if (rect.left <= 0 || rect.right >= window.innerWidth) dx *= -1;
-                if (rect.top <= 0 || rect.bottom >= window.innerHeight) dy *= -1;
+                let docWidth = window.innerWidth;
+                let docHeight = window.innerHeight;
+
+                if (rect.left <= 0 || rect.right >= docWidth) dx *= -1;
+                if (rect.top <= 0 || rect.bottom >= docHeight) dy *= -1;
+
                 mascot.style.left = rect.left + dx + "px";
                 mascot.style.top = rect.top + dy + "px";
+
                 requestAnimationFrame(moveMascot);
             }
             moveMascot();
+        });
 
-            function openApp(appName) {
-                let win = document.createElement("div");
-                win.classList.add("window");
-                win.innerHTML = `
-                    <div class="window-header">
-                        <div class="window-buttons">
-                            <div class="close" onclick="this.parentElement.parentElement.parentElement.remove()"></div>
-                            <div class="minimize"></div>
-                            <div class="fullscreen"></div>
-                        </div>
-                        ${appName}
-                    </div>
-                    <div class="window-content">${appName === "browser" ? "<iframe src='https://arandomdumdev.github.io/RandomOSWeb/'></iframe>" : "App content here"}</div>
-                `;
-                document.getElementById("window-container").appendChild(win);
+        // Open Control Center on swipe from top right
+        let touchStartY;
+        document.addEventListener("touchstart", (e) => touchStartY = e.touches[0].clientY);
 
-                // Make it draggable
-                let isDragging = false;
-                let offsetX, offsetY;
-
-                win.querySelector(".window-header").addEventListener("mousedown", (e) => {
-                    isDragging = true;
-                    offsetX = e.clientX - win.offsetLeft;
-                    offsetY = e.clientY - win.offsetTop;
-                });
-
-                document.addEventListener("mousemove", (e) => {
-                    if (isDragging) {
-                        win.style.left = e.clientX - offsetX + "px";
-                        win.style.top = e.clientY - offsetY + "px";
-                    }
-                });
-
-                document.addEventListener("mouseup", () => isDragging = false);
+        document.addEventListener("touchend", (e) => {
+            let touchEndY = e.changedTouches[0].clientY;
+            if (touchStartY > touchEndY + 50) {
+                document.getElementById("control-center").classList.add("open");
             }
+        });
 
-            // Open Control Center on swipe down from top right
-            let touchStartY;
-            document.addEventListener("touchstart", (e) => {
-                touchStartY = e.touches[0].clientY;
-            });
-
-            document.addEventListener("touchend", (e) => {
-                let touchEndY = e.changedTouches[0].clientY;
-                if (touchStartY > touchEndY + 50) {
-                    document.getElementById("control-center").classList.add("open");
-                }
-            });
-
-            // Close Control Center on click outside
-            document.addEventListener("click", (e) => {
-                if (!document.getElementById("control-center").contains(e.target)) {
-                    document.getElementById("control-center").classList.remove("open");
-                }
-            });
+        document.addEventListener("click", (e) => {
+            if (!document.getElementById("control-center").contains(e.target)) {
+                document.getElementById("control-center").classList.remove("open");
+            }
         });
     </script>
 </body>

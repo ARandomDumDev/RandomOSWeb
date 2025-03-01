@@ -12,7 +12,6 @@
             overflow: hidden;
             color: #333;
         }
-
         /* Dock */
         #dock {
             position: fixed;
@@ -26,18 +25,15 @@
             display: flex;
             gap: 15px;
         }
-
         .dock-icon {
             width: 40px;
             height: 40px;
             cursor: pointer;
             transition: transform 0.2s;
         }
-
         .dock-icon:hover {
             transform: scale(1.2);
         }
-
         /* Windows */
         .window {
             position: absolute;
@@ -52,7 +48,6 @@
             display: flex;
             flex-direction: column;
         }
-
         .window-header {
             background: #F5F5F7;
             padding: 8px 12px;
@@ -62,39 +57,32 @@
             cursor: move;
             border-bottom: 1px solid #ddd;
         }
-
         .window-title {
             font-size: 14px;
             font-weight: 500;
         }
-
         .window-buttons {
             display: flex;
             gap: 8px;
         }
-
         .window-button {
             width: 12px;
             height: 12px;
             border-radius: 50%;
             cursor: pointer;
         }
-
         .close { background: #FF5F57; }
         .minimize { background: #FFBD2E; }
         .fullscreen { background: #28C840; }
-
         .window-content {
             flex-grow: 1;
             overflow: auto;
         }
-
         /* Settings App */
         .settings-container {
             display: flex;
             height: 100%;
         }
-
         .settings-sidebar {
             width: 200px;
             background: #F5F5F7;
@@ -102,13 +90,11 @@
             padding: 10px;
             box-sizing: border-box;
         }
-
         .settings-sidebar ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-
         .settings-sidebar li {
             padding: 8px 10px;
             cursor: pointer;
@@ -116,22 +102,18 @@
             margin-bottom: 5px;
             transition: background 0.2s;
         }
-
         .settings-sidebar li:hover {
             background: rgba(0, 0, 0, 0.1);
         }
-
         .settings-content {
             flex-grow: 1;
             padding: 20px;
             box-sizing: border-box;
         }
-
         /* Calendar App */
         .calendar-container {
             padding: 20px;
         }
-
         .calendar-container iframe {
             width: 100%;
             height: 100%;
@@ -142,26 +124,21 @@
 <body>
     <!-- Dock -->
     <div id="dock">
-        <img src="https://path-to-apple-icons/calendar.png" class="dock-icon" onclick="openApp('calendar')" title="Calendar">
-        <img src="https://path-to-apple-icons/settings.png" class="dock-icon" onclick="openApp('settings')" title="Settings">
-        <img src="https://path-to-apple-icons/browser.png" class="dock-icon" onclick="openApp('browser')" title="Browser">
+        <img src="icons/calendar.png" class="dock-icon" onclick="openApp('calendar')" title="Calendar">
+        <img src="icons/settings.png" class="dock-icon" onclick="openApp('settings')" title="Settings">
+        <img src="icons/browser.png" class="dock-icon" onclick="openApp('browser')" title="Browser">
     </div>
-
     <!-- Windows Container -->
     <div id="window-container"></div>
-
     <script>
         let windowOffset = 0;
-
         function openApp(appName) {
             const win = document.createElement("div");
             win.classList.add("window");
             win.style.left = 100 + windowOffset + "px";
             win.style.top = 100 + windowOffset + "px";
             windowOffset = (windowOffset + 20) % 100;
-
             let content = '';
-
             switch (appName) {
                 case 'calendar':
                     content = `
@@ -170,19 +147,4 @@
                             <div class="window-buttons">
                                 <div class="window-button close" onclick="closeWindow(this)"></div>
                                 <div class="window-button minimize"></div>
-                                <div class="window-button fullscreen"></div>
-                            </div>
-                        </div>
-                        <div class="window-content calendar-container">
-                            <iframe src="https://calendar.google.com" frameborder="0"></iframe>
-                        </div>
-                    `;
-                    break;
-                case 'settings':
-                    content = `
-                        <div class="window-header">
-                            <div class="window-title">Settings</div>
-                            <div class="window-buttons">
-                                <div class="window-button close" onclick="closeWindow(this)"></div>
-                                <div class="window-button minimize"></div>
-                                <div class="window-button fullscreen"></div 
+                                <div class="window-button fullscreen 

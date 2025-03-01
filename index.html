@@ -28,9 +28,9 @@
         }
 
         .dock-icon {
-            font-size: 24px;
+            width: 40px;
+            height: 40px;
             cursor: pointer;
-            padding: 5px;
             transition: transform 0.2s;
         }
 
@@ -41,14 +41,16 @@
         /* Windows */
         .window {
             position: absolute;
-            width: 400px;
-            height: 300px;
+            width: 500px;
+            height: 400px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             border: 1px solid #ddd;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             resize: both;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .window-header {
@@ -83,76 +85,54 @@
         .fullscreen { background: #28C840; }
 
         .window-content {
-            padding: 15px;
-            height: calc(100% - 40px);
+            flex-grow: 1;
             overflow: auto;
         }
 
-        /* Mascot */
-        #mascot {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            user-select: none;
-            cursor: grab;
-        }
-
-        #mascot:active {
-            cursor: grabbing;
-        }
-
-        /* Control Center */
-        #control-center {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 300px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            display: none;
-        }
-
-        #control-center.open {
-            display: block;
-        }
-
-        #sliders {
+        /* Settings App */
+        .settings-container {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            height: 100%;
         }
 
-        label {
-            font-size: 12px;
-            margin-bottom: 5px;
+        .settings-sidebar {
+            width: 200px;
+            background: #F5F5F7;
+            border-right: 1px solid #ddd;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 4px;
-            background: #ddd;
-            border-radius: 2px;
-            outline: none;
-            transition: background 0.3s;
+        .settings-sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            background: #007AFF;
-            border-radius: 50%;
+        .settings-sidebar li {
+            padding: 8px 10px;
             cursor: pointer;
-            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: background 0.2s;
         }
 
-        iframe {
+        .settings-sidebar li:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Calendar App */
+        .calendar-container {
+            padding: 20px;
+        }
+
+        .calendar-container iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -162,26 +142,9 @@
 <body>
     <!-- Dock -->
     <div id="dock">
-        <div class="dock-icon" onclick="openApp('calendar')" title="Calendar">📅</div>
-        <div class="dock-icon" onclick="openApp('settings')" title="Settings">⚙️</div>
-        <div class="dock-icon" onclick="openApp('browser')" title="Browser">🌍</div>
-    </div>
-
-    <!-- Mascot -->
-    <img src="https://i.ibb.co/XffN5T0z/Untitled93-0000-02-46-20250204170936.png" id="mascot" alt="Mascot">
-
-    <!-- Control Center -->
-    <div id="control-center">
-        <div id="sliders">
-            <div>
-                <label for="brightness-slider">Brightness</label>
-                <input type="range" id="brightness-slider" min="0" max="100" value="100">
-            </div>
-            <div>
-                <label for="volume-slider">Volume</label>
-                <input type="range" id="volume-slider" min="0" max="100" value="50">
-            </div>
-        </div>
+        <img src="https://path-to-apple-icons/calendar.png" class="dock-icon" onclick="openApp('calendar')" title="Calendar">
+        <img src="https://path-to-apple-icons/settings.png" class="dock-icon" onclick="openApp('settings')" title="Settings">
+        <img src="https://path-to-apple-icons/browser.png" class="dock-icon" onclick="openApp('browser')" title="Browser">
     </div>
 
     <!-- Windows Container -->
@@ -197,4 +160,29 @@
             win.style.top = 100 + windowOffset + "px";
             windowOffset = (windowOffset + 20) % 100;
 
-            let content = 
+            let content = '';
+
+            switch (appName) {
+                case 'calendar':
+                    content = `
+                        <div class="window-header">
+                            <div class="window-title">Calendar</div>
+                            <div class="window-buttons">
+                                <div class="window-button close" onclick="closeWindow(this)"></div>
+                                <div class="window-button minimize"></div>
+                                <div class="window-button fullscreen"></div>
+                            </div>
+                        </div>
+                        <div class="window-content calendar-container">
+                            <iframe src="https://calendar.google.com" frameborder="0"></iframe>
+                        </div>
+                    `;
+                    break;
+                case 'settings':
+                    content = `
+                        <div class="window-header">
+                            <div class="window-title">Settings</div>
+                            <div class="window-buttons">
+                                <div class="window-button close" onclick="closeWindow(this)"></div>
+                                <div class="window-button minimize"></div>
+                                <div class="window-button fullscreen"></div 
